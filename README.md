@@ -1,53 +1,68 @@
 # Airframe CAD Onboarding — site
 
 The onboarding project for new ASME Aero Airframe subteam members: design a motor
-mount in Fusion 360. Published as a single static page.
+mount in Fusion 360.
+
+**Live at <https://aksharmparmar-max.github.io/airframe-onboarding/>**
 
 ## What's here
 
 | Path | What it is |
 |---|---|
-| `index.html` | The whole site. One self-contained file — images are inlined, no CSS/JS dependencies. |
+| `index.html` | The published page. **Generated — don't edit by hand.** |
+| `src/` | What the page is built from: `template.html`, `build.py`, and `img/`. |
 | `files/` | The three reference CAD files members download, plus a zip of all three. |
 | `robots.txt` | Keeps the site out of search results. The page also carries a `noindex` meta tag. |
 | `.nojekyll` | Tells GitHub Pages to serve the files as-is rather than running them through Jekyll. |
 
-## Editing the content
+`index.html` is one self-contained file — images are inlined as data URIs and
+there's no external CSS or JS. Nothing to install, nothing that can 404.
 
-`index.html` is generated, so don't edit it directly — edits get overwritten on the
-next build. The source is `template.html` plus `build.py` (kept with the working
-files, not in this repo). The build inlines the images and swaps in download links.
+## Changing the content
 
-For a small copy fix, editing `index.html` directly is fine as long as you make the
-same change in the template.
+Edit `src/template.html`, then regenerate:
 
-## Deploying to GitHub Pages
+```bash
+python src/build.py
+```
 
-The repo is already initialized and committed. To publish:
+That rewrites `index.html`. Commit both the template change and the regenerated
+`index.html` together, then push — GitHub Pages redeploys on its own within a
+minute or two.
 
-1. Create a new **public** repo on github.com — don't add a README, license, or
-   .gitignore, since this folder already has commits.
-2. Connect and push:
+```bash
+git add -A
+git commit -m "Describe the change"
+git push
+```
 
-   ```bash
-   git remote add origin https://github.com/<your-username>/<repo-name>.git
-   git branch -M main
-   git push -u origin main
-   ```
+To preview before pushing, open `index.html` in a browser, or serve the folder
+with `python -m http.server 8765` and visit <http://localhost:8765> — the
+download links only work when served, not opened as a file.
 
-3. In the repo: **Settings → Pages → Source: Deploy from a branch**, branch `main`,
-   folder `/ (root)`. Save.
-4. Wait a minute or two. The site appears at
-   `https://<your-username>.github.io/<repo-name>/`.
+### The two build flavors
 
-To update later: edit, then `git add -A && git commit -m "..." && git push`. Pages
-redeploys on its own.
+`python src/build.py` builds the site. `python src/build.py artifact` builds a
+copy for hosting on claude.ai, which can't host the CAD binaries, so its download
+links are replaced with a pointer to the shared folder. That output is
+`src/artifact-build.html` and is intentionally untracked.
+
+## How the page behaves
+
+- **Track selector.** Readers pick Track A or Track B in "Pick a track" and the
+  modules hide the other track's steps. The choice persists per browser.
+- **Progress checkboxes.** Each step can be ticked off; progress saves to the
+  reader's own browser only, and nothing is reported back to anyone. The total
+  counts only the steps currently visible, so it adapts to the chosen track.
+- Track columns are marked with `data-track="a"` / `data-track="b"` in the
+  template. Any new step block needs one of those to be filtered correctly.
 
 ## Notes
 
 - The page names team members and describes internal workflow, so it's set to
-  `noindex` — anyone with the link can read it, but it won't surface in a search
-  for someone's name. GitHub Pages can't password-protect on the free tier; if you
-  need real access control later, Cloudflare Pages does it.
-- The CAD files in `files/` are Fusion 360 native (`.f3d` / `.f3z`). Members on other
-  CAD tools need STEP exports — worth adding to `files/` when you have them.
+  `noindex`. Anyone with the link can read it, but it won't surface in a search
+  for someone's name. GitHub Pages can't password-protect on the free tier; if
+  you need real access control, Cloudflare Pages does it.
+- The CAD files are Fusion 360 native (`.f3d` / `.f3z`). Members on other CAD
+  tools need STEP exports — worth adding to `files/` when you have them, and
+  updating the "File formats" callout in the template once you do.

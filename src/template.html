@@ -1,0 +1,921 @@
+<title>Airframe Onboarding — Build a Motor Mount</title>
+
+<style>
+:root {
+  --ground: #f4f5f8;
+  --panel: #ffffff;
+  --panel-2: #eceef2;
+  --ink: #12161d;
+  --ink-2: #39414f;
+  --muted: #6c7583;
+  --rule: #d6dae1;
+  --rule-strong: #b4bbc6;
+  --accent: #c2451a;
+  --accent-ink: #a13a15;
+  --accent-soft: #f7e6de;
+  --cyan: #2b6577;
+  --cyan-soft: #dfeaee;
+  --sans: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
+  --mono: "Cascadia Mono", Consolas, "SF Mono", ui-monospace, "Roboto Mono", monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ground: #11151b;
+    --panel: #181d25;
+    --panel-2: #1f242e;
+    --ink: #e7eaef;
+    --ink-2: #b5bdca;
+    --muted: #858f9e;
+    --rule: #2a313c;
+    --rule-strong: #3c4552;
+    --accent: #ff7c47;
+    --accent-ink: #ff9268;
+    --accent-soft: #3a2015;
+    --cyan: #74b6c9;
+    --cyan-soft: #16303a;
+  }
+}
+
+:root[data-theme="dark"] {
+  --ground: #11151b;
+  --panel: #181d25;
+  --panel-2: #1f242e;
+  --ink: #e7eaef;
+  --ink-2: #b5bdca;
+  --muted: #858f9e;
+  --rule: #2a313c;
+  --rule-strong: #3c4552;
+  --accent: #ff7c47;
+  --accent-ink: #ff9268;
+  --accent-soft: #3a2015;
+  --cyan: #74b6c9;
+  --cyan-soft: #16303a;
+}
+
+:root[data-theme="light"] {
+  --ground: #f4f5f8;
+  --panel: #ffffff;
+  --panel-2: #eceef2;
+  --ink: #12161d;
+  --ink-2: #39414f;
+  --muted: #6c7583;
+  --rule: #d6dae1;
+  --rule-strong: #b4bbc6;
+  --accent: #c2451a;
+  --accent-ink: #a13a15;
+  --accent-soft: #f7e6de;
+  --cyan: #2b6577;
+  --cyan-soft: #dfeaee;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: 17px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--accent-ink); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+a:hover { color: var(--accent); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+
+/* ---------- shell ---------- */
+.shell { max-width: 1180px; margin: 0 auto; padding: 0 24px 96px; }
+
+/* Narrow screens lose the sticky rail, so the progress readout moves up here. */
+.mobar {
+  position: sticky; top: 0; z-index: 20;
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 0; background: var(--ground); border-bottom: 1px solid var(--rule);
+}
+.mobar .lbl {
+  font-family: var(--sans); font-size: 10.5px; font-weight: 700; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--muted);
+}
+.mobar .ct {
+  font-family: var(--mono); font-size: 13px; font-variant-numeric: tabular-nums; color: var(--ink);
+}
+.mobar .bar { flex: 1; }
+@media (min-width: 1000px) { .mobar { display: none; } }
+
+.masthead {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 18px;
+  padding: 20px 0 14px; border-bottom: 1px solid var(--rule);
+}
+.masthead .org {
+  font-family: var(--sans); font-size: 12px; font-weight: 700;
+  letter-spacing: .16em; text-transform: uppercase; color: var(--accent);
+}
+.masthead .sub {
+  font-family: var(--sans); font-size: 12px; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--muted);
+}
+.masthead .rev { margin-left: auto; font-family: var(--mono); font-size: 12px; color: var(--muted); }
+
+/* ---------- title block ---------- */
+.titleblock { padding: 40px 0 34px; border-bottom: 2px solid var(--ink); }
+.titleblock h1 {
+  font-family: var(--sans); font-weight: 700; letter-spacing: -.02em;
+  font-size: clamp(30px, 5.2vw, 50px); line-height: 1.05; margin: 0 0 14px;
+  text-wrap: balance; max-width: 16ch;
+}
+.titleblock .lede {
+  font-size: clamp(17px, 2.2vw, 20px); color: var(--ink-2);
+  max-width: 60ch; margin: 0 0 28px;
+}
+.titleblock .lede b { color: var(--ink); font-weight: 600; }
+
+.specs {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  border: 1px solid var(--rule); border-radius: 3px; overflow: hidden;
+  background: var(--panel);
+}
+.specs div { padding: 12px 16px; border-right: 1px solid var(--rule); }
+.specs div:last-child { border-right: 0; }
+.specs dt {
+  font-family: var(--sans); font-size: 10.5px; font-weight: 600;
+  letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin-bottom: 3px;
+}
+.specs dd {
+  margin: 0; font-family: var(--mono); font-size: 15px; font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+/* ---------- layout ---------- */
+.layout { display: block; }
+.rail { display: none; }
+.main { min-width: 0; }
+
+@media (min-width: 1000px) {
+  .layout { display: grid; grid-template-columns: 208px minmax(0, 1fr); gap: 56px; align-items: start; }
+  .rail { display: block; position: sticky; top: 24px; padding-top: 48px; }
+}
+
+.rail nav { display: flex; flex-direction: column; gap: 2px; }
+.rail a {
+  font-family: var(--sans); font-size: 13px; line-height: 1.35; color: var(--muted);
+  text-decoration: none; padding: 5px 0 5px 12px; border-left: 2px solid var(--rule);
+}
+.rail a:hover { color: var(--ink); border-left-color: var(--rule-strong); }
+.rail a .n { font-family: var(--mono); font-size: 11px; margin-right: 7px; opacity: .75; }
+
+.tracker { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--rule); }
+.tracker .lbl {
+  font-family: var(--sans); font-size: 10.5px; font-weight: 600; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--muted);
+}
+.tracker .count {
+  font-family: var(--mono); font-size: 22px; font-variant-numeric: tabular-nums;
+  color: var(--ink); margin: 6px 0 8px;
+}
+.bar { height: 4px; background: var(--panel-2); border-radius: 2px; overflow: hidden; }
+.bar span { display: block; height: 100%; width: 0; background: var(--accent); transition: width .3s ease; }
+.tracker button {
+  margin-top: 12px; font-family: var(--sans); font-size: 11.5px; color: var(--muted);
+  background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.tracker button:hover { color: var(--ink); }
+
+/* ---------- sections ---------- */
+.section { padding: 52px 0 0; }
+.section + .section { margin-top: 12px; }
+.section > .head { border-top: 1px solid var(--rule); padding-top: 14px; margin-bottom: 26px; }
+.section > .head .n {
+  font-family: var(--mono); font-size: 12px; color: var(--accent);
+  letter-spacing: .06em; display: block; margin-bottom: 6px;
+}
+.section > .head h2 {
+  font-family: var(--sans); font-weight: 700; letter-spacing: -.015em;
+  font-size: clamp(23px, 3vw, 30px); line-height: 1.15; margin: 0; text-wrap: balance;
+}
+.section > .head p {
+  margin: 8px 0 0; color: var(--ink-2); max-width: 66ch;
+}
+.prose { max-width: 68ch; }
+.prose p { margin: 0 0 16px; }
+.prose > :last-child { margin-bottom: 0; }
+
+/* ---------- figures ---------- */
+figure { margin: 0; }
+figure.tall { max-width: 400px; }
+figure.square { max-width: 520px; }
+figure.wide { max-width: 680px; }
+figure img {
+  display: block; width: 100%; height: auto; border-radius: 3px;
+  border: 1px solid var(--rule);
+}
+figcaption {
+  font-family: var(--sans); font-size: 12.5px; line-height: 1.5; color: var(--muted);
+  margin-top: 9px; padding-left: 11px; border-left: 2px solid var(--accent);
+}
+figcaption b { color: var(--ink-2); font-weight: 600; }
+
+.figrow { display: grid; gap: 26px; margin: 30px 0 0; }
+@media (min-width: 620px) { .figrow.two { grid-template-columns: 1fr 1fr; } }
+
+/* ---------- file cards ---------- */
+.files { display: grid; gap: 14px; margin-bottom: 26px; }
+.file {
+  display: grid; gap: 4px 18px; grid-template-columns: 1fr; align-items: baseline;
+  background: var(--panel); border: 1px solid var(--rule); border-radius: 3px;
+  border-left: 3px solid var(--cyan); padding: 14px 18px;
+}
+@media (min-width: 700px) { .file { grid-template-columns: 300px minmax(0, 1fr); } }
+.file .name {
+  font-family: var(--mono); font-size: 14px; color: var(--ink); font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.file .role { font-size: 15.5px; color: var(--ink-2); }
+.file .role b { color: var(--ink); font-weight: 600; }
+.file.locked { border-left-color: var(--accent); }
+
+.dl {
+  display: inline-flex; align-items: baseline; gap: 6px; margin-left: 10px;
+  font-family: var(--sans); font-size: 12px; font-weight: 600; letter-spacing: .04em;
+  text-transform: uppercase; color: var(--accent-ink); text-decoration: none;
+  white-space: nowrap;
+}
+.dl::before { content: "\2193"; font-weight: 400; }
+.dl:hover { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+.dl .sz { font-family: var(--mono); font-size: 11px; text-transform: none; color: var(--muted); letter-spacing: 0; }
+
+.dl-all {
+  display: inline-flex; align-items: baseline; gap: 9px; margin-top: 4px;
+  font-family: var(--sans); font-size: 14px; font-weight: 600;
+  color: var(--panel); background: var(--accent); text-decoration: none;
+  padding: 11px 20px; border-radius: 3px;
+}
+.dl-all::before { content: "\2193"; font-weight: 400; }
+.dl-all:hover { background: var(--accent-ink); color: var(--panel); }
+.dl-all .sz { font-family: var(--mono); font-size: 12px; font-weight: 400; opacity: .8; }
+:root[data-theme="dark"] .dl-all, :root[data-theme="dark"] .dl-all:hover { color: #14181f; }
+@media (prefers-color-scheme: dark) {
+  .dl-all, .dl-all:hover { color: #14181f; }
+}
+:root[data-theme="light"] .dl-all, :root[data-theme="light"] .dl-all:hover { color: #ffffff; }
+
+.callout {
+  background: var(--panel); border: 1px solid var(--rule); border-left: 3px solid var(--accent);
+  border-radius: 3px; padding: 16px 20px; margin: 26px 0 0; max-width: 68ch;
+}
+.callout .lbl {
+  font-family: var(--sans); font-size: 10.5px; font-weight: 700; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--accent); display: block; margin-bottom: 6px;
+}
+.callout p { margin: 0 0 10px; font-size: 16px; color: var(--ink-2); }
+.callout > :last-child { margin-bottom: 0; }
+
+/* ---------- tracks ---------- */
+.trackpick { display: grid; gap: 16px; margin-top: 4px; }
+@media (min-width: 720px) { .trackpick { grid-template-columns: 1fr 1fr; } }
+.trackcard {
+  background: var(--panel); border: 1px solid var(--rule); border-radius: 3px;
+  padding: 20px 22px; border-top: 3px solid var(--cyan);
+  font: inherit; color: inherit; text-align: left; cursor: pointer; width: 100%;
+  display: block; position: relative;
+}
+.trackcard.b { border-top-color: var(--accent); }
+.trackcard:hover { border-color: var(--rule-strong); }
+.trackcard h3 {
+  font-family: var(--sans); font-size: 17px; font-weight: 700; margin: 0 0 2px; letter-spacing: -.01em;
+}
+.trackcard .who {
+  font-family: var(--sans); font-size: 12.5px; color: var(--muted); margin: 0 0 12px;
+}
+.trackcard p { margin: 0; font-size: 16px; color: var(--ink-2); }
+.trackcard .pick {
+  display: block; margin-top: 14px;
+  font-family: var(--sans); font-size: 11px; font-weight: 700; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--cyan);
+}
+.trackcard.b .pick { color: var(--accent); }
+.trackcard[aria-pressed="true"] {
+  border-color: var(--cyan); box-shadow: inset 0 0 0 1px var(--cyan); background: var(--cyan-soft);
+}
+.trackcard.b[aria-pressed="true"] {
+  border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); background: var(--accent-soft);
+}
+.trackcard[aria-pressed="true"] .pick::before { content: "\2713 "; }
+
+.trackreset {
+  margin-top: 16px; font-family: var(--sans); font-size: 13px; color: var(--muted);
+  background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.trackreset:hover { color: var(--ink); }
+.trackreset[hidden] { display: none; }
+
+/* Track filtering: hide the track the reader didn't choose, and let the
+   surviving column use the full width instead of sitting in a narrow one. */
+[data-track-filter="a"] [data-track="b"],
+[data-track-filter="b"] [data-track="a"] { display: none; }
+@media (min-width: 780px) {
+  [data-track-filter="a"] .split,
+  [data-track-filter="b"] .split { grid-template-columns: minmax(0, 1fr); }
+}
+.trackflag {
+  display: none; align-items: baseline; gap: 8px; margin-bottom: 18px;
+  font-family: var(--sans); font-size: 12px; color: var(--muted);
+}
+[data-track-filter] .trackflag { display: flex; }
+.trackflag b {
+  font-weight: 700; letter-spacing: .1em; text-transform: uppercase; font-size: 10.5px;
+  color: var(--cyan);
+}
+[data-track-filter="b"] .trackflag b { color: var(--accent); }
+.trackflag button {
+  font: inherit; font-size: 12px; color: var(--muted); background: none; border: 0;
+  padding: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 3px;
+}
+.trackflag button:hover { color: var(--ink); }
+
+/* ---------- modules ---------- */
+.module {
+  background: var(--panel); border: 1px solid var(--rule); border-radius: 3px;
+  padding: 24px 26px 26px; margin-bottom: 18px;
+}
+.module .mhead { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; margin-bottom: 12px; }
+.tag {
+  font-family: var(--mono); font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--accent); background: var(--accent-soft); padding: 3px 8px; border-radius: 2px;
+}
+.module .mhead h3 {
+  font-family: var(--sans); font-size: clamp(19px, 2.4vw, 23px); font-weight: 700;
+  letter-spacing: -.015em; margin: 0; flex: 1 1 260px; text-wrap: balance;
+}
+.module .goal { margin: 0 0 20px; color: var(--ink-2); max-width: 68ch; }
+.module .goal b { color: var(--ink); font-weight: 600; }
+
+.split { display: grid; gap: 22px; }
+@media (min-width: 780px) { .split { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 30px; } }
+.split > div { min-width: 0; }
+.slabel {
+  font-family: var(--sans); font-size: 10.5px; font-weight: 700; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--muted); padding-bottom: 8px; margin-bottom: 12px;
+  border-bottom: 1px solid var(--rule); display: block;
+}
+.slabel em { font-style: normal; color: var(--cyan); }
+.slabel.alt em { color: var(--accent); }
+
+.steps { display: flex; flex-direction: column; gap: 2px; }
+.step {
+  display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 10px; align-items: start;
+  padding: 7px 8px 7px 0; border-radius: 3px; cursor: pointer; font-size: 16px; line-height: 1.5;
+  color: var(--ink-2);
+}
+.step:hover { background: var(--panel-2); }
+.step input { width: 15px; height: 15px; margin: 4px 0 0; accent-color: var(--accent); cursor: pointer; }
+.step input:checked + span { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--rule-strong); }
+.step code, .prose code, .file code {
+  font-family: var(--mono); font-size: .87em; background: var(--panel-2);
+  padding: 1px 5px; border-radius: 2px; color: var(--ink);
+}
+.module .note {
+  margin-top: 20px; padding: 13px 16px; background: var(--cyan-soft); border-radius: 3px;
+  font-size: 15.5px; color: var(--ink-2); max-width: 72ch;
+}
+.module .note b { color: var(--ink); font-weight: 600; }
+
+/* ---------- tables ---------- */
+.tablewrap { overflow-x: auto; border: 1px solid var(--rule); border-radius: 3px; background: var(--panel); }
+table { border-collapse: collapse; width: 100%; min-width: 520px; }
+th, td { text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--rule); vertical-align: top; font-size: 15.5px; }
+tr:last-child td { border-bottom: 0; }
+th {
+  font-family: var(--sans); font-size: 10.5px; font-weight: 700; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--muted); background: var(--panel-2);
+  border-bottom: 1px solid var(--rule-strong);
+}
+td .when { font-family: var(--mono); font-size: 13px; color: var(--ink); white-space: nowrap; }
+td.who { color: var(--muted); }
+
+/* ---------- troubleshooting ---------- */
+.faq { border-top: 1px solid var(--rule); max-width: 74ch; }
+.faq details { border-bottom: 1px solid var(--rule); }
+.faq summary {
+  cursor: pointer; padding: 14px 0; font-family: var(--sans); font-size: 16px; font-weight: 600;
+  color: var(--ink); list-style: none; display: flex; gap: 12px; align-items: baseline;
+}
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::before {
+  content: "+"; font-family: var(--mono); color: var(--accent); font-weight: 400; font-size: 17px;
+}
+.faq details[open] summary::before { content: "\2212"; }
+.faq details p { margin: 0 0 16px; padding-left: 24px; color: var(--ink-2); font-size: 16px; }
+
+/* ---------- glossary ---------- */
+.glossary { display: grid; gap: 0; margin: 0; border-top: 1px solid var(--rule); }
+.glossary div {
+  display: grid; gap: 2px 24px; padding: 11px 0; border-bottom: 1px solid var(--rule);
+}
+@media (min-width: 680px) { .glossary div { grid-template-columns: 210px minmax(0, 1fr); } }
+.glossary dt { font-family: var(--sans); font-weight: 600; font-size: 15px; color: var(--ink); }
+.glossary dd { margin: 0; font-size: 15.5px; color: var(--ink-2); }
+
+/* ---------- contacts / links ---------- */
+.linklist { display: grid; gap: 10px; max-width: 72ch; margin: 0; padding: 0; list-style: none; }
+.linklist li {
+  display: grid; gap: 2px 20px; padding-bottom: 10px; border-bottom: 1px solid var(--rule);
+}
+@media (min-width: 680px) { .linklist li { grid-template-columns: 240px minmax(0, 1fr); } }
+.linklist .k { font-family: var(--sans); font-size: 14px; font-weight: 600; color: var(--ink); }
+.linklist .v { font-size: 15.5px; color: var(--ink-2); overflow-wrap: anywhere; }
+
+.colophon {
+  margin-top: 56px; padding-top: 18px; border-top: 2px solid var(--ink);
+  display: flex; flex-wrap: wrap; gap: 6px 28px;
+  font-family: var(--mono); font-size: 12px; color: var(--muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+}
+html { scroll-behavior: smooth; }
+</style>
+
+<div class="shell">
+
+  <div class="mobar">
+    <span class="lbl">Progress</span>
+    <span class="ct"><span data-count>0</span>/<span data-total>0</span></span>
+    <div class="bar"><span data-fill></span></div>
+  </div>
+
+  <header class="masthead">
+    <span class="org">ASME Aero</span>
+    <span class="sub">Airframe Subteam · CAD Onboarding</span>
+    <span class="rev">REV 1.0 · 2026-07-05</span>
+  </header>
+
+  <div class="titleblock">
+    <h1>Build a Motor Mount in Fusion&nbsp;360</h1>
+    <p class="lede">Your first CAD project on Airframe. Instead of a throwaway tutorial, you'll design a <b>real part</b> — the bracket that holds a brushless motor onto our VTOL aircraft. <b>No prior CAD experience required.</b></p>
+    <dl class="specs">
+      <div><dt>Modules</dt><dd>4</dd></div>
+      <div><dt>Tracks</dt><dd>A or B</dd></div>
+      <div><dt>Capstone</dt><dd>Motor Mount</dd></div>
+      <div><dt>Software</dt><dd>Fusion 360</dd></div>
+      <div><dt>Lead</dt><dd>A. Parmar</dd></div>
+    </dl>
+  </div>
+
+  <div class="layout">
+
+    <aside class="rail">
+      <nav>
+        <a href="#start"><span class="n">01</span>Start here</a>
+        <a href="#files"><span class="n">02</span>Files &amp; setup</a>
+        <a href="#tracks"><span class="n">03</span>Pick a track</a>
+        <a href="#m1"><span class="n">04</span>Module 1 · Orientation</a>
+        <a href="#m2"><span class="n">05</span>Module 2 · Fundamentals</a>
+        <a href="#m3"><span class="n">06</span>Module 3 · Capstone</a>
+        <a href="#m4"><span class="n">07</span>Module 4 · Assembly</a>
+        <a href="#checkpoints"><span class="n">08</span>Checkpoints</a>
+        <a href="#help"><span class="n">09</span>Stuck?</a>
+        <a href="#glossary"><span class="n">10</span>Glossary</a>
+        <a href="#contacts"><span class="n">11</span>Contacts</a>
+      </nav>
+      <div class="tracker">
+        <span class="lbl">Your progress</span>
+        <div class="count"><span data-count>0</span> / <span data-total>0</span></div>
+        <div class="bar"><span data-fill></span></div>
+        <button type="button" id="reset">Reset</button>
+      </div>
+    </aside>
+
+    <main class="main">
+
+      <!-- 01 -->
+      <section class="section" id="start">
+        <div class="head">
+          <span class="n">01</span>
+          <h2>Start here</h2>
+        </div>
+        <div class="prose">
+          <p>Welcome to Airframe. We design a <b>VTOL</b> aircraft — it takes off and lands straight up and down like a helicopter, then flies efficiently like a plane in between. The <em>airframe</em> is the structural skeleton: the parts that hold the motors, electronics, and payload together and keep the whole thing rigid in flight.</p>
+          <p>The part you're building is the <b>Motor Mount</b> — the bracket that attaches a brushless motor to that skeleton. It's small, but it carries real flight loads, so the fit has to be right. That makes it a good first project: you'll learn the tools <em>and</em> the way we actually design hardware here.</p>
+        </div>
+
+        <figure class="square" style="margin-top:30px">
+          <img src="{{IMG1}}" alt="Fusion 360 render of a brushless motor seated on its four-arm mount bracket" />
+          <figcaption><b>The finished assembly.</b> A brushless motor bolted to its mount — this is what you're working toward.</figcaption>
+        </figure>
+
+        <div class="callout">
+          <span class="lbl">Read this before you start</span>
+          <p>This is a learning project, not a test. Your first CAD model almost certainly won't match the production part — that's expected. What matters is the process: taking measurements, thinking through a design, getting comfortable with the tools.</p>
+          <p>Ask questions early and often. A quick answer from someone who knows beats staying stuck.</p>
+        </div>
+
+        <div class="prose" style="margin-top:30px">
+          <p><b style="font-family:var(--sans);font-size:15px">What you'll walk away with</b></p>
+        </div>
+        <ul class="linklist" style="margin-top:12px">
+          <li><span class="k">Fusion 360 fluency</span><span class="v">Comfort navigating the interface and the core modeling tools.</span></li>
+          <li><span class="k">Reading a real assembly</span><span class="v">The ability to open a CAD assembly and understand how the parts fit together.</span></li>
+          <li><span class="k">Designing to an interface</span><span class="v">Experience making a part that has to mate precisely with another part — a core airframe skill.</span></li>
+          <li><span class="k">A real component</span><span class="v">A model of a part that's genuinely on our aircraft.</span></li>
+          <li><span class="k">A way in</span><span class="v">A clear sense of who to ask for help and how the subteam's CAD workflow runs.</span></li>
+        </ul>
+      </section>
+
+      <!-- 02 -->
+      <section class="section" id="files">
+        <div class="head">
+          <span class="n">02</span>
+          <h2>Files &amp; setup</h2>
+          <p>Get these three things done before Module 1 — an account, the software, and the three reference CAD files.</p>
+        </div>
+
+        <span class="slabel">Software</span>
+        <div class="steps" style="margin-bottom:26px">
+          <label class="step"><input type="checkbox" data-id="setup-1" /><span>Create a free Autodesk account using your <b>.edu</b> email, then install Fusion 360 on the free education license.</span></label>
+          <label class="step"><input type="checkbox" data-id="setup-2" /><span>Join the ASME Aero Fusion 360 team/project — ask Akshar for the invite if you don't have access yet.</span></label>
+          <label class="step"><input type="checkbox" data-id="setup-3" /><span>Download the three reference files below and upload them to your Fusion project.</span></label>
+        </div>
+
+        <span class="slabel">The three reference files{{FILES_LINK_LABEL}}</span>
+        <div class="files">
+          <div class="file">
+            <span class="name">Brushless Motor{{DL_MOTOR}}</span>
+            <span class="role"><b>The motor your mount has to fit.</b> You'll measure it in Module 1 and build around it in Module 3. Reference only — never edit it.</span>
+          </div>
+          <div class="file">
+            <span class="name">Brushless Motor + Mount Assembly{{DL_ASSEMBLY}}</span>
+            <span class="role"><b>The finished assembly.</b> Explore it in Module 1 to see how the parts relate, then use it in Module 4 to check your own orientation and fit.</span>
+          </div>
+          <div class="file locked">
+            <span class="name">Motor Mount{{DL_MOUNT}}</span>
+            <span class="role"><b>The production bracket — this is the answer key.</b> Don't open it until the self-check step in Module 3.</span>
+          </div>
+        </div>
+        {{DL_ALL}}
+
+        <div class="callout">
+          <span class="lbl">File formats</span>
+          <p>These are Fusion 360 native files (<code>.f3d</code> parts and an <code>.f3z</code> assembly), which open directly in Fusion — upload them to your project through the Data Panel.</p>
+          <p>If you're on SolidWorks, Onshape, or anything else, ask Akshar for <code>.step</code> exports instead. STEP is the universal format any CAD program can read, and it's what we use to share parts between software and with manufacturers.</p>
+        </div>
+      </section>
+
+      <!-- 03 -->
+      <section class="section" id="tracks">
+        <div class="head">
+          <span class="n">03</span>
+          <h2>Pick a track</h2>
+          <p>Every module below gives instructions two ways. Pick the one that sounds closer to you and the modules will show only those steps — you can switch or show both again whenever you like. Moving between tracks partway through is completely fine.</p>
+        </div>
+        <div class="trackpick">
+          <button type="button" class="trackcard" data-pick="a" aria-pressed="false">
+            <h3>Track A — New to CAD</h3>
+            <p class="who">Never used Fusion 360 or any parametric CAD tool</p>
+            <p>Follow every step in each module exactly as written, and watch the linked tutorial before starting.</p>
+            <span class="pick">Choose Track A</span>
+          </button>
+          <button type="button" class="trackcard b" data-pick="b" aria-pressed="false">
+            <h3>Track B — Some experience</h3>
+            <p class="who">Used Fusion 360, SolidWorks, Onshape, or similar</p>
+            <p>Skim the goal and constraints, attempt the modeling independently, and drop into the detailed steps only when you get stuck.</p>
+            <span class="pick">Choose Track B</span>
+          </button>
+        </div>
+        <button type="button" class="trackreset" id="showboth" hidden>Show both tracks again</button>
+      </section>
+
+      <!-- 04 -->
+      <section class="section" id="m1">
+        <div class="head">
+          <span class="n">04</span>
+          <h2>The four modules</h2>
+          <p>Work through them in order. Pick it up and put it down as you go — the checkboxes keep your place.</p>
+        </div>
+
+        <p class="trackflag">
+          <b data-trackname>Track A</b>
+          <span>Showing this track only.</span>
+          <button type="button" data-showboth>Show both</button>
+        </p>
+
+        <article class="module">
+          <div class="mhead">
+            <span class="tag">Module 1</span>
+            <h3>Orientation &amp; reading the reference assembly</h3>
+          </div>
+          <p class="goal"><b>Goal —</b> Get comfortable in the Fusion 360 interface by exploring real airframe hardware instead of a blank tutorial part.</p>
+
+          <div class="split">
+            <div data-track="a">
+              <span class="slabel">Track A <em>— guided steps</em></span>
+              <div class="steps">
+                <label class="step"><input type="checkbox" data-id="m1-1" /><span>Open <b>Brushless Motor + Mount Assembly</b> in Fusion 360.</span></label>
+                <label class="step"><input type="checkbox" data-id="m1-2" /><span>Practice orbit, pan, zoom, and section view (<code>Inspect &gt; Section Analysis</code>, which slices the model open so you can see inside) to see how the two components fit together.</span></label>
+                <label class="step"><input type="checkbox" data-id="m1-3" /><span>Open each component from the assembly browser individually and note its name and role.</span></label>
+                <label class="step"><input type="checkbox" data-id="m1-4" /><span>Use <code>Inspect &gt; Measure</code> to find the motor's <b>bolt circle diameter</b> (the ring of mounting holes), its <b>body/bell diameter</b>, and the <b>shaft/D-shaft interface</b> if present.</span></label>
+                <label class="step"><input type="checkbox" data-id="m1-5" /><span>Write your measurements down — you'll need them in Module 3.</span></label>
+              </div>
+              <div class="note"><b>New to 3D software?</b> Scroll to zoom, hold the middle mouse button and drag to pan, and hold Shift + middle mouse button to orbit. It feels clumsy at first — that's normal, not a sign you're doing it wrong.</div>
+            </div>
+            <div data-track="b">
+              <span class="slabel alt">Track B <em>— targets</em></span>
+              <div class="steps">
+                <label class="step"><input type="checkbox" data-id="m1-b" /><span>Open the assembly and identify the mounting interface — bolt pattern, motor bell diameter, any pilot/spigot feature — without step-by-step guidance. Note anything about the mount's design you'd have done differently.</span></label>
+              </div>
+            </div>
+          </div>
+
+          <figure class="tall" style="margin-top:26px">
+            <img src="{{IMG2}}" alt="Fusion 360 render of the brushless motor alone, showing the D-shaft and mounting bolt pattern" />
+            <figcaption><b>The brushless motor.</b> The D-shaft and mounting bolt pattern are the interface your mount has to match.</figcaption>
+          </figure>
+
+          <div class="note" style="margin-top:22px"><b>Don't worry if</b> your measurements are off by a little — that's normal for a first pass with the Measure tool. Cross-check anything you're unsure about with a mentor before relying on it in Module 3. It's a quick Slack message, not a big ask.</div>
+        </article>
+
+        <article class="module" id="m2">
+          <div class="mhead">
+            <span class="tag">Module 2</span>
+            <h3>Sketch &amp; solid modeling fundamentals</h3>
+          </div>
+          <p class="goal"><b>Goal —</b> Build the baseline skills — sketch constraints, extrude, revolve, fillet, hole — you need before attempting the Motor Mount.</p>
+
+          <div class="split">
+            <div data-track="a">
+              <span class="slabel">Track A <em>— guided steps</em></span>
+              <div class="steps">
+                <label class="step"><input type="checkbox" data-id="m2-1" /><span>Watch Autodesk's official <b>Get Started</b> sketching tutorial, then the solid-modeling tutorial — sketching first, modeling second. Both are linked under <a href="#contacts">Resources</a>.</span></label>
+                <label class="step"><input type="checkbox" data-id="m2-2" /><span>Warm-up part: model a simple <b>L-bracket</b> with two bolt holes and a fillet, fully constrained. Fusion shows under-constrained sketches in a different color as a hint.</span></label>
+                <label class="step"><input type="checkbox" data-id="m2-3" /><span>Post your warm-up part's sketch and feature tree in the Airframe Slack channel and tag Akshar or a mentor for a quick review before moving on.</span></label>
+              </div>
+            </div>
+            <div data-track="b">
+              <span class="slabel alt">Track B <em>— targets</em></span>
+              <div class="steps">
+                <label class="step"><input type="checkbox" data-id="m2-b" /><span>Skip the warm-up if you're already comfortable with sketch constraints, extrude/revolve, and the timeline. Confirm by describing, in one sentence, the difference between a fully constrained and an under-constrained sketch — then move on.</span></label>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="module" id="m3">
+          <div class="mhead">
+            <span class="tag">Module 3 · Capstone</span>
+            <h3>Modeling the Motor Mount</h3>
+          </div>
+          <p class="goal"><b>Goal —</b> Model the Motor Mount bracket from scratch so it correctly mates to the real motor, using your own judgment for the bracket geometry outside the mounting interface.</p>
+
+          <div class="split">
+            <div data-track="a">
+              <span class="slabel">Track A <em>— guided steps</em></span>
+              <div class="steps">
+                <label class="step"><input type="checkbox" data-id="m3-1" /><span>In a new design, bring in <b>Brushless Motor</b> as a reference copy: upload the file to your Fusion project, then right-click it in the Data Panel and choose <code>Insert into Current Design</code>. You'll build your mount around it in the same file — use it only to check fit, never edit it.</span></label>
+                <label class="step"><input type="checkbox" data-id="m3-2" /><span>Sketch the bolt pattern on a plane aligned to the motor's mounting face, using your Module 1 measurements.</span></label>
+                <label class="step"><input type="checkbox" data-id="m3-3" /><span>Extrude a base plate, then add the features that attach to the airframe side — a second bolt pattern or slot — sized reasonably for the motor.</span></label>
+                <label class="step"><input type="checkbox" data-id="m3-4" /><span>Add fillets and lightening cutouts, similar to what you'd expect on a real 3D-printed or machined bracket.</span></label>
+                <label class="step"><input type="checkbox" data-id="m3-5" /><span>Check the fit: temporarily join your mount to the reference motor and run <code>Inspect &gt; Interference</code> to confirm nothing overlaps.</span></label>
+                <label class="step"><input type="checkbox" data-id="m3-6" /><span><b>Self-check —</b> now open the production <b>Motor Mount</b> file and compare its geometry and bolt pattern side by side with yours, noting the differences.</span></label>
+              </div>
+            </div>
+            <div data-track="b">
+              <span class="slabel alt">Track B <em>— targets</em></span>
+              <div class="steps">
+                <label class="step"><input type="checkbox" data-id="m3-b" /><span>Given only the motor reference file and your own measurements, design a mount that satisfies the fit interface, is manufacturable (3D-printable or CNC-able), and minimizes mass. Self-check against the production part and be ready to explain any deliberate design differences.</span></label>
+              </div>
+            </div>
+          </div>
+
+          <div class="note" style="margin-top:22px"><b>About the self-check.</b> It's very unlikely your mount will look identical to the production part, and that's fine — different valid designs can satisfy the same mounting interface. Use the comparison to learn, not to grade yourself against a "correct answer."</div>
+
+          <figure class="wide" style="margin-top:26px">
+            <img src="{{IMG3}}" alt="Fusion 360 render of the production motor mount: a four-arm plate with eight bolt holes and a large central cutout" />
+            <figcaption><b>The production Motor Mount.</b> For comparison after you've finished your own model — not a template to copy beforehand.</figcaption>
+          </figure>
+        </article>
+
+        <article class="module" id="m4">
+          <div class="mhead">
+            <span class="tag">Module 4</span>
+            <h3>Assembly &amp; fit verification</h3>
+          </div>
+          <p class="goal"><b>Goal —</b> Confirm your mount works as a real assembly, not just a standalone part.</p>
+          <div class="steps">
+            <label class="step"><input type="checkbox" data-id="m4-1" /><span>Create a new assembly containing your Motor Mount and a reference copy of <b>Brushless Motor</b>.</span></label>
+            <label class="step"><input type="checkbox" data-id="m4-2" /><span>Apply joints — rigid or bolted-connection — to position the motor correctly on your mount.</span></label>
+            <label class="step"><input type="checkbox" data-id="m4-3" /><span>Run an interference check and resolve any collisions.</span></label>
+            <label class="step"><input type="checkbox" data-id="m4-4" /><span>Compare your result to <b>Brushless Motor + Mount Assembly</b> for overall orientation and fit.</span></label>
+            <label class="step"><input type="checkbox" data-id="m4-5" /><span>Export your finished mount as a <code>.step</code> file and share it in the Airframe Slack channel for review.</span></label>
+          </div>
+        </article>
+      </section>
+
+      <!-- 08 -->
+      <section class="section" id="checkpoints">
+        <div class="head">
+          <span class="n">08</span>
+          <h2>Checkpoints</h2>
+          <p>Three points where you hand something in and get feedback. Work at whatever pace suits you — these are for support, not scoring.</p>
+        </div>
+        <div class="tablewrap">
+          <table>
+            <thead>
+              <tr><th scope="col">When</th><th scope="col">What to submit</th><th scope="col">Reviewed by</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="when">End of Module 2</span></td>
+                <td>Warm-up L-bracket part. <code>.f3d</code> is Fusion's own save format; a <code>.step</code> export works too.</td>
+                <td class="who">Akshar or an airframe mentor</td>
+              </tr>
+              <tr>
+                <td><span class="when">End of Module 3</span></td>
+                <td>Motor Mount model + your self-check notes</td>
+                <td class="who">Akshar or an airframe mentor</td>
+              </tr>
+              <tr>
+                <td><span class="when">End of Module 4</span></td>
+                <td>Assembly file + interference check screenshot</td>
+                <td class="who">Akshar or an airframe mentor</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 09 -->
+      <section class="section" id="help">
+        <div class="head">
+          <span class="n">09</span>
+          <h2>Stuck?</h2>
+          <p>Things every first-time Fusion 360 user runs into. Try these first if you want — but posting in the Airframe Slack channel is always a fine move too.</p>
+        </div>
+        <div class="faq">
+          <details>
+            <summary>My sketch won't fully constrain, and I don't know why.</summary>
+            <p>Check the status bar at the bottom of the screen — Fusion tells you how many degrees of freedom remain. Under-constrained lines usually show in a different color. Add dimensions or geometric constraints (parallel, coincident, and so on) one at a time until it goes fully constrained.</p>
+          </details>
+          <details>
+            <summary>Fusion says my sketch is over-constrained or conflicting.</summary>
+            <p>You've added a redundant or contradictory dimension. Undo your most recent constraint and try a different one — you often only need one more constraint than you think.</p>
+          </details>
+          <details>
+            <summary>I can't find the right plane to sketch on.</summary>
+            <p>Use the assembly's existing faces as sketch planes where you can — click a flat face, then start a new sketch — rather than creating new offset planes. It keeps things simpler while you're learning.</p>
+          </details>
+          <details>
+            <summary>My interference check shows a collision I don't understand.</summary>
+            <p>Zoom into the flagged area and toggle component visibility on and off to see exactly which two faces overlap. It's usually a joint positioned slightly wrong.</p>
+          </details>
+          <details>
+            <summary>I'm stuck and none of this helped.</summary>
+            <p>Post a screenshot in the Airframe Slack channel and tag Akshar or a mentor. Getting unstuck with help beats staying stuck on your own — asking questions is expected, not a last resort.</p>
+          </details>
+        </div>
+      </section>
+
+      <!-- 10 -->
+      <section class="section" id="glossary">
+        <div class="head">
+          <span class="n">10</span>
+          <h2>Glossary</h2>
+          <p>Come back here any time something trips you up. Nothing to memorize.</p>
+        </div>
+        <dl class="glossary">
+          <div><dt>CAD</dt><dd>Computer-Aided Design — software used to design 3D parts before they're built.</dd></div>
+          <div><dt>Fusion 360</dt><dd>The CAD software our team uses to design parts and assemblies.</dd></div>
+          <div><dt>STEP file (.step)</dt><dd>A universal 3D format any CAD program can open — how we share parts between software and with manufacturers.</dd></div>
+          <div><dt>Sketch</dt><dd>A 2D drawing (lines, circles) that you turn into a 3D shape, usually by extruding or revolving it.</dd></div>
+          <div><dt>Constraint / fully constrained</dt><dd>Rules that lock down a sketch's size and position so it can't move unexpectedly. Fully constrained means every line and dimension is locked — nothing left loose or ambiguous.</dd></div>
+          <div><dt>Extrude</dt><dd>Pushing a flat 2D sketch outward to create a 3D solid — like stamping a cookie-cutter shape and giving it thickness.</dd></div>
+          <div><dt>Revolve</dt><dd>Spinning a 2D sketch around an axis to create a round 3D shape, like a lathe.</dd></div>
+          <div><dt>Fillet</dt><dd>A rounded edge added to a sharp corner — for looks, strength, or to avoid sharp edges.</dd></div>
+          <div><dt>Feature tree / timeline</dt><dd>The list at the bottom of the Fusion window showing every step you took to build the part, in order.</dd></div>
+          <div><dt>Assembly</dt><dd>Multiple parts (components) combined and positioned relative to each other.</dd></div>
+          <div><dt>Joint</dt><dd>How two components are connected, and whether they're allowed to move relative to each other.</dd></div>
+          <div><dt>Interference check</dt><dd>A tool that checks whether two parts in an assembly overlap or collide where they shouldn't.</dd></div>
+          <div><dt>Bolt pattern / bolt circle</dt><dd>The arrangement — usually a ring — of holes used to bolt two parts together.</dd></div>
+          <div><dt>VTOL</dt><dd>Vertical Take-Off and Landing. Our aircraft lifts off straight up like a helicopter, then flies like a plane.</dd></div>
+        </dl>
+      </section>
+
+      <!-- 11 -->
+      <section class="section" id="contacts">
+        <div class="head">
+          <span class="n">11</span>
+          <h2>Resources &amp; contacts</h2>
+          <p>Questions, blockers, or suggestions are welcome at any point — don't wait for a checkpoint to ask.</p>
+        </div>
+        <ul class="linklist">
+          <li><span class="k">Airframe questions</span><span class="v">Akshar Parmar, subteam lead — Airframe channel in the ASME Aero Slack (ask to be added if you can't find it)</span></li>
+          <li><span class="k">Program-level questions</span><span class="v">Anthony Kurowski / Charlie — Aero subteam leadership, outside Airframe</span></li>
+          <li><span class="k">Sketching tutorial (start here)</span><span class="v"><a href="https://www.autodesk.com/products/fusion-360/learn-support">Fusion 360 "Get Started" learning portal</a></span></li>
+          <li><span class="k">Solid modeling &amp; assemblies</span><span class="v"><a href="https://www.autodesk.com/products/fusion-360/learn-support">Same portal</a> — look for the solid-modeling/assemblies course rather than the sketching one. Watch after sketching.</span></li>
+          <li><span class="k">Student license sign-up</span><span class="v"><a href="https://www.autodesk.com/education/edu-software/overview">autodesk.com/education</a></span></li>
+        </ul>
+      </section>
+
+      <div class="colophon">
+        <span>ASME AERO · AIRFRAME SUBTEAM</span>
+        <span>REV 1.0</span>
+        <span>UPDATED 2026-07-05</span>
+        <span>A. PARMAR</span>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script>
+(function () {
+  var KEY = "airframe-onboarding-progress";
+  var TRACK_KEY = "airframe-onboarding-track";
+  var boxes = Array.prototype.slice.call(document.querySelectorAll(".step input"));
+  // Two readouts share the state: the sticky rail on desktop, the top bar on mobile.
+  var counts = document.querySelectorAll("[data-count]");
+  var totals = document.querySelectorAll("[data-total]");
+  var fills = document.querySelectorAll("[data-fill]");
+  var state = {};
+
+  try { state = JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { state = {}; }
+
+  // Steps in a hidden track shouldn't count toward progress, so the total is
+  // whatever is actually on screen for the chosen track.
+  function visible() {
+    return boxes.filter(function (b) { return b.offsetParent !== null; });
+  }
+
+  function render() {
+    var shown = visible();
+    var n = shown.filter(function (b) { return b.checked; }).length;
+    var pct = shown.length ? (n / shown.length * 100) + "%" : "0%";
+    counts.forEach(function (el) { el.textContent = n; });
+    totals.forEach(function (el) { el.textContent = shown.length; });
+    fills.forEach(function (el) { el.style.width = pct; });
+  }
+
+  boxes.forEach(function (b) {
+    if (state[b.dataset.id]) b.checked = true;
+    b.addEventListener("change", function () {
+      state[b.dataset.id] = b.checked;
+      try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
+      render();
+    });
+  });
+
+  document.getElementById("reset").addEventListener("click", function () {
+    boxes.forEach(function (b) { b.checked = false; });
+    state = {};
+    try { localStorage.removeItem(KEY); } catch (e) {}
+    render();
+  });
+
+  /* ---------- track selection ---------- */
+  var root = document.documentElement;
+  var cards = Array.prototype.slice.call(document.querySelectorAll(".trackcard"));
+  var showBoth = Array.prototype.slice.call(document.querySelectorAll("#showboth, [data-showboth]"));
+  var nameEls = document.querySelectorAll("[data-trackname]");
+  var resetBtn = document.getElementById("showboth");
+
+  function setTrack(track, persist) {
+    if (track) {
+      root.setAttribute("data-track-filter", track);
+      nameEls.forEach(function (el) { el.textContent = track === "a" ? "Track A" : "Track B"; });
+    } else {
+      root.removeAttribute("data-track-filter");
+    }
+    cards.forEach(function (c) {
+      c.setAttribute("aria-pressed", String(c.dataset.pick === track));
+    });
+    if (resetBtn) resetBtn.hidden = !track;
+    if (persist) {
+      try {
+        if (track) localStorage.setItem(TRACK_KEY, track);
+        else localStorage.removeItem(TRACK_KEY);
+      } catch (e) {}
+    }
+    render();
+  }
+
+  cards.forEach(function (c) {
+    c.addEventListener("click", function () {
+      // Clicking the active track again clears the filter.
+      var next = c.getAttribute("aria-pressed") === "true" ? null : c.dataset.pick;
+      setTrack(next, true);
+    });
+  });
+
+  showBoth.forEach(function (b) {
+    b.addEventListener("click", function () { setTrack(null, true); });
+  });
+
+  var saved = null;
+  try { saved = localStorage.getItem(TRACK_KEY); } catch (e) {}
+  setTrack(saved === "a" || saved === "b" ? saved : null, false);
+})();
+</script>

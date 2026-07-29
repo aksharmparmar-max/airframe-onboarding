@@ -287,8 +287,11 @@ figcaption b { color: var(--ink-2); font-weight: 600; }
 .trackcard {
   background: var(--panel); border: 1px solid var(--rule); border-radius: 3px;
   padding: 20px 22px; border-top: 3px solid var(--cyan);
+  font: inherit; color: inherit; text-align: left; cursor: pointer; width: 100%;
+  display: block; position: relative;
 }
 .trackcard.b { border-top-color: var(--accent); }
+.trackcard:hover { border-color: var(--rule-strong); }
 .trackcard h3 {
   font-family: var(--sans); font-size: 17px; font-weight: 700; margin: 0 0 2px; letter-spacing: -.01em;
 }
@@ -296,6 +299,51 @@ figcaption b { color: var(--ink-2); font-weight: 600; }
   font-family: var(--sans); font-size: 12.5px; color: var(--muted); margin: 0 0 12px;
 }
 .trackcard p { margin: 0; font-size: 16px; color: var(--ink-2); }
+.trackcard .pick {
+  display: block; margin-top: 14px;
+  font-family: var(--sans); font-size: 11px; font-weight: 700; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--cyan);
+}
+.trackcard.b .pick { color: var(--accent); }
+.trackcard[aria-pressed="true"] {
+  border-color: var(--cyan); box-shadow: inset 0 0 0 1px var(--cyan); background: var(--cyan-soft);
+}
+.trackcard.b[aria-pressed="true"] {
+  border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); background: var(--accent-soft);
+}
+.trackcard[aria-pressed="true"] .pick::before { content: "\2713 "; }
+
+.trackreset {
+  margin-top: 16px; font-family: var(--sans); font-size: 13px; color: var(--muted);
+  background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.trackreset:hover { color: var(--ink); }
+.trackreset[hidden] { display: none; }
+
+/* Track filtering: hide the track the reader didn't choose, and let the
+   surviving column use the full width instead of sitting in a narrow one. */
+[data-track-filter="a"] [data-track="b"],
+[data-track-filter="b"] [data-track="a"] { display: none; }
+@media (min-width: 780px) {
+  [data-track-filter="a"] .split,
+  [data-track-filter="b"] .split { grid-template-columns: minmax(0, 1fr); }
+}
+.trackflag {
+  display: none; align-items: baseline; gap: 8px; margin-bottom: 18px;
+  font-family: var(--sans); font-size: 12px; color: var(--muted);
+}
+[data-track-filter] .trackflag { display: flex; }
+.trackflag b {
+  font-weight: 700; letter-spacing: .1em; text-transform: uppercase; font-size: 10.5px;
+  color: var(--cyan);
+}
+[data-track-filter="b"] .trackflag b { color: var(--accent); }
+.trackflag button {
+  font: inherit; font-size: 12px; color: var(--muted); background: none; border: 0;
+  padding: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 3px;
+}
+.trackflag button:hover { color: var(--ink); }
 
 /* ---------- modules ---------- */
 .module {
@@ -310,9 +358,6 @@ figcaption b { color: var(--ink-2); font-weight: 600; }
 .module .mhead h3 {
   font-family: var(--sans); font-size: clamp(19px, 2.4vw, 23px); font-weight: 700;
   letter-spacing: -.015em; margin: 0; flex: 1 1 260px; text-wrap: balance;
-}
-.module .mhead .time {
-  font-family: var(--mono); font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums;
 }
 .module .goal { margin: 0 0 20px; color: var(--ink-2); max-width: 68ch; }
 .module .goal b { color: var(--ink); font-weight: 600; }
@@ -425,10 +470,10 @@ html { scroll-behavior: smooth; }
     <h1>Build a Motor Mount in Fusion&nbsp;360</h1>
     <p class="lede">Your first CAD project on Airframe. Instead of a throwaway tutorial, you'll design a <b>real part</b> — the bracket that holds a brushless motor onto our VTOL aircraft. <b>No prior CAD experience required.</b></p>
     <dl class="specs">
-      <div><dt>Total time</dt><dd>8–12 hrs</dd></div>
       <div><dt>Modules</dt><dd>4</dd></div>
       <div><dt>Tracks</dt><dd>A or B</dd></div>
-      <div><dt>Target</dt><dd>Module 3 in wk 2</dd></div>
+      <div><dt>Capstone</dt><dd>Motor Mount</dd></div>
+      <div><dt>Software</dt><dd>Fusion 360</dd></div>
       <div><dt>Lead</dt><dd>A. Parmar</dd></div>
     </dl>
   </div>
@@ -478,7 +523,7 @@ html { scroll-behavior: smooth; }
         <div class="callout">
           <span class="lbl">Read this before you start</span>
           <p>This is a learning project, not a test. Your first CAD model almost certainly won't match the production part — that's expected. What matters is the process: taking measurements, thinking through a design, getting comfortable with the tools.</p>
-          <p>Ask questions early and often. Five minutes of help beats an hour stuck alone.</p>
+          <p>Ask questions early and often. A quick answer from someone who knows beats staying stuck.</p>
         </div>
 
         <div class="prose" style="margin-top:30px">
@@ -527,7 +572,7 @@ html { scroll-behavior: smooth; }
 
         <div class="callout">
           <span class="lbl">File formats</span>
-          <p>The files in the shared folder are Fusion 360 native (<code>.f3d</code> parts and an <code>.f3z</code> assembly), which open directly in Fusion — upload them to your project through the Data Panel.</p>
+          <p>These are Fusion 360 native files (<code>.f3d</code> parts and an <code>.f3z</code> assembly), which open directly in Fusion — upload them to your project through the Data Panel.</p>
           <p>If you're on SolidWorks, Onshape, or anything else, ask Akshar for <code>.step</code> exports instead. STEP is the universal format any CAD program can read, and it's what we use to share parts between software and with manufacturers.</p>
         </div>
       </section>
@@ -537,20 +582,23 @@ html { scroll-behavior: smooth; }
         <div class="head">
           <span class="n">03</span>
           <h2>Pick a track</h2>
-          <p>Every module below gives instructions two ways. Read both, pick whichever sounds closer to you, and don't overthink it — moving between tracks partway through is completely fine. The goal is steady progress, not a label.</p>
+          <p>Every module below gives instructions two ways. Pick the one that sounds closer to you and the modules will show only those steps — you can switch or show both again whenever you like. Moving between tracks partway through is completely fine.</p>
         </div>
         <div class="trackpick">
-          <div class="trackcard">
+          <button type="button" class="trackcard" data-pick="a" aria-pressed="false">
             <h3>Track A — New to CAD</h3>
             <p class="who">Never used Fusion 360 or any parametric CAD tool</p>
             <p>Follow every step in each module exactly as written, and watch the linked tutorial before starting.</p>
-          </div>
-          <div class="trackcard b">
+            <span class="pick">Choose Track A</span>
+          </button>
+          <button type="button" class="trackcard b" data-pick="b" aria-pressed="false">
             <h3>Track B — Some experience</h3>
             <p class="who">Used Fusion 360, SolidWorks, Onshape, or similar</p>
             <p>Skim the goal and constraints, attempt the modeling independently, and drop into the detailed steps only when you get stuck.</p>
-          </div>
+            <span class="pick">Choose Track B</span>
+          </button>
         </div>
+        <button type="button" class="trackreset" id="showboth" hidden>Show both tracks again</button>
       </section>
 
       <!-- 04 -->
@@ -558,19 +606,24 @@ html { scroll-behavior: smooth; }
         <div class="head">
           <span class="n">04</span>
           <h2>The four modules</h2>
-          <p>Roughly 8–12 hours total. There's no need to do this in one sitting — spread it across several sessions in your first couple of weeks.</p>
+          <p>Work through them in order. Pick it up and put it down as you go — the checkboxes keep your place.</p>
         </div>
+
+        <p class="trackflag">
+          <b data-trackname>Track A</b>
+          <span>Showing this track only.</span>
+          <button type="button" data-showboth>Show both</button>
+        </p>
 
         <article class="module">
           <div class="mhead">
             <span class="tag">Module 1</span>
             <h3>Orientation &amp; reading the reference assembly</h3>
-            <span class="time">~1–1.5 hrs</span>
           </div>
           <p class="goal"><b>Goal —</b> Get comfortable in the Fusion 360 interface by exploring real airframe hardware instead of a blank tutorial part.</p>
 
           <div class="split">
-            <div>
+            <div data-track="a">
               <span class="slabel">Track A <em>— guided steps</em></span>
               <div class="steps">
                 <label class="step"><input type="checkbox" data-id="m1-1" /><span>Open <b>Brushless Motor + Mount Assembly</b> in Fusion 360.</span></label>
@@ -579,9 +632,9 @@ html { scroll-behavior: smooth; }
                 <label class="step"><input type="checkbox" data-id="m1-4" /><span>Use <code>Inspect &gt; Measure</code> to find the motor's <b>bolt circle diameter</b> (the ring of mounting holes), its <b>body/bell diameter</b>, and the <b>shaft/D-shaft interface</b> if present.</span></label>
                 <label class="step"><input type="checkbox" data-id="m1-5" /><span>Write your measurements down — you'll need them in Module 3.</span></label>
               </div>
-              <div class="note"><b>New to 3D software?</b> Scroll to zoom, hold the middle mouse button and drag to pan, and hold Shift + middle mouse button to orbit. It feels clumsy for the first few minutes — that's normal, not a sign you're doing it wrong.</div>
+              <div class="note"><b>New to 3D software?</b> Scroll to zoom, hold the middle mouse button and drag to pan, and hold Shift + middle mouse button to orbit. It feels clumsy at first — that's normal, not a sign you're doing it wrong.</div>
             </div>
-            <div>
+            <div data-track="b">
               <span class="slabel alt">Track B <em>— targets</em></span>
               <div class="steps">
                 <label class="step"><input type="checkbox" data-id="m1-b" /><span>Open the assembly and identify the mounting interface — bolt pattern, motor bell diameter, any pilot/spigot feature — without step-by-step guidance. Note anything about the mount's design you'd have done differently.</span></label>
@@ -594,19 +647,18 @@ html { scroll-behavior: smooth; }
             <figcaption><b>The brushless motor.</b> The D-shaft and mounting bolt pattern are the interface your mount has to match.</figcaption>
           </figure>
 
-          <div class="note" style="margin-top:22px"><b>Don't worry if</b> your measurements are off by a little — that's normal for a first pass with the Measure tool. Cross-check anything you're unsure about with a mentor before relying on it in Module 3. It's a 30-second Slack message, not a big ask.</div>
+          <div class="note" style="margin-top:22px"><b>Don't worry if</b> your measurements are off by a little — that's normal for a first pass with the Measure tool. Cross-check anything you're unsure about with a mentor before relying on it in Module 3. It's a quick Slack message, not a big ask.</div>
         </article>
 
         <article class="module" id="m2">
           <div class="mhead">
             <span class="tag">Module 2</span>
             <h3>Sketch &amp; solid modeling fundamentals</h3>
-            <span class="time">~2–3 hrs (A) · ~30 min (B)</span>
           </div>
           <p class="goal"><b>Goal —</b> Build the baseline skills — sketch constraints, extrude, revolve, fillet, hole — you need before attempting the Motor Mount.</p>
 
           <div class="split">
-            <div>
+            <div data-track="a">
               <span class="slabel">Track A <em>— guided steps</em></span>
               <div class="steps">
                 <label class="step"><input type="checkbox" data-id="m2-1" /><span>Watch Autodesk's official <b>Get Started</b> sketching tutorial, then the solid-modeling tutorial — sketching first, modeling second. Both are linked under <a href="#contacts">Resources</a>.</span></label>
@@ -614,7 +666,7 @@ html { scroll-behavior: smooth; }
                 <label class="step"><input type="checkbox" data-id="m2-3" /><span>Post your warm-up part's sketch and feature tree in the Airframe Slack channel and tag Akshar or a mentor for a quick review before moving on.</span></label>
               </div>
             </div>
-            <div>
+            <div data-track="b">
               <span class="slabel alt">Track B <em>— targets</em></span>
               <div class="steps">
                 <label class="step"><input type="checkbox" data-id="m2-b" /><span>Skip the warm-up if you're already comfortable with sketch constraints, extrude/revolve, and the timeline. Confirm by describing, in one sentence, the difference between a fully constrained and an under-constrained sketch — then move on.</span></label>
@@ -627,12 +679,11 @@ html { scroll-behavior: smooth; }
           <div class="mhead">
             <span class="tag">Module 3 · Capstone</span>
             <h3>Modeling the Motor Mount</h3>
-            <span class="time">~3–5 hrs (A) · ~2 hrs (B)</span>
           </div>
           <p class="goal"><b>Goal —</b> Model the Motor Mount bracket from scratch so it correctly mates to the real motor, using your own judgment for the bracket geometry outside the mounting interface.</p>
 
           <div class="split">
-            <div>
+            <div data-track="a">
               <span class="slabel">Track A <em>— guided steps</em></span>
               <div class="steps">
                 <label class="step"><input type="checkbox" data-id="m3-1" /><span>In a new design, bring in <b>Brushless Motor</b> as a reference copy: upload the file to your Fusion project, then right-click it in the Data Panel and choose <code>Insert into Current Design</code>. You'll build your mount around it in the same file — use it only to check fit, never edit it.</span></label>
@@ -643,7 +694,7 @@ html { scroll-behavior: smooth; }
                 <label class="step"><input type="checkbox" data-id="m3-6" /><span><b>Self-check —</b> now open the production <b>Motor Mount</b> file and compare its geometry and bolt pattern side by side with yours, noting the differences.</span></label>
               </div>
             </div>
-            <div>
+            <div data-track="b">
               <span class="slabel alt">Track B <em>— targets</em></span>
               <div class="steps">
                 <label class="step"><input type="checkbox" data-id="m3-b" /><span>Given only the motor reference file and your own measurements, design a mount that satisfies the fit interface, is manufacturable (3D-printable or CNC-able), and minimizes mass. Self-check against the production part and be ready to explain any deliberate design differences.</span></label>
@@ -663,7 +714,6 @@ html { scroll-behavior: smooth; }
           <div class="mhead">
             <span class="tag">Module 4</span>
             <h3>Assembly &amp; fit verification</h3>
-            <span class="time">~1–2 hrs</span>
           </div>
           <p class="goal"><b>Goal —</b> Confirm your mount works as a real assembly, not just a standalone part.</p>
           <div class="steps">
@@ -681,7 +731,7 @@ html { scroll-behavior: smooth; }
         <div class="head">
           <span class="n">08</span>
           <h2>Checkpoints</h2>
-          <p>Three points where you hand something in and get feedback. Aim to reach the end of Module 3 within your first two weeks — Module 4 and anything beyond follows at your own pace.</p>
+          <p>Three points where you hand something in and get feedback. Work at whatever pace suits you — these are for support, not scoring.</p>
         </div>
         <div class="tablewrap">
           <table>
@@ -735,7 +785,7 @@ html { scroll-behavior: smooth; }
           </details>
           <details>
             <summary>I'm stuck and none of this helped.</summary>
-            <p>Post a screenshot in the Airframe Slack channel and tag Akshar or a mentor. Getting unstuck in five minutes with help beats an hour stuck alone — asking questions is expected, not a last resort.</p>
+            <p>Post a screenshot in the Airframe Slack channel and tag Akshar or a mentor. Getting unstuck with help beats staying stuck on your own — asking questions is expected, not a last resort.</p>
           </details>
         </div>
       </section>
@@ -795,6 +845,7 @@ html { scroll-behavior: smooth; }
 <script>
 (function () {
   var KEY = "airframe-onboarding-progress";
+  var TRACK_KEY = "airframe-onboarding-track";
   var boxes = Array.prototype.slice.call(document.querySelectorAll(".step input"));
   // Two readouts share the state: the sticky rail on desktop, the top bar on mobile.
   var counts = document.querySelectorAll("[data-count]");
@@ -804,12 +855,18 @@ html { scroll-behavior: smooth; }
 
   try { state = JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { state = {}; }
 
-  totals.forEach(function (el) { el.textContent = boxes.length; });
+  // Steps in a hidden track shouldn't count toward progress, so the total is
+  // whatever is actually on screen for the chosen track.
+  function visible() {
+    return boxes.filter(function (b) { return b.offsetParent !== null; });
+  }
 
   function render() {
-    var n = boxes.filter(function (b) { return b.checked; }).length;
-    var pct = boxes.length ? (n / boxes.length * 100) + "%" : "0%";
+    var shown = visible();
+    var n = shown.filter(function (b) { return b.checked; }).length;
+    var pct = shown.length ? (n / shown.length * 100) + "%" : "0%";
     counts.forEach(function (el) { el.textContent = n; });
+    totals.forEach(function (el) { el.textContent = shown.length; });
     fills.forEach(function (el) { el.style.width = pct; });
   }
 
@@ -829,7 +886,48 @@ html { scroll-behavior: smooth; }
     render();
   });
 
-  render();
+  /* ---------- track selection ---------- */
+  var root = document.documentElement;
+  var cards = Array.prototype.slice.call(document.querySelectorAll(".trackcard"));
+  var showBoth = Array.prototype.slice.call(document.querySelectorAll("#showboth, [data-showboth]"));
+  var nameEls = document.querySelectorAll("[data-trackname]");
+  var resetBtn = document.getElementById("showboth");
+
+  function setTrack(track, persist) {
+    if (track) {
+      root.setAttribute("data-track-filter", track);
+      nameEls.forEach(function (el) { el.textContent = track === "a" ? "Track A" : "Track B"; });
+    } else {
+      root.removeAttribute("data-track-filter");
+    }
+    cards.forEach(function (c) {
+      c.setAttribute("aria-pressed", String(c.dataset.pick === track));
+    });
+    if (resetBtn) resetBtn.hidden = !track;
+    if (persist) {
+      try {
+        if (track) localStorage.setItem(TRACK_KEY, track);
+        else localStorage.removeItem(TRACK_KEY);
+      } catch (e) {}
+    }
+    render();
+  }
+
+  cards.forEach(function (c) {
+    c.addEventListener("click", function () {
+      // Clicking the active track again clears the filter.
+      var next = c.getAttribute("aria-pressed") === "true" ? null : c.dataset.pick;
+      setTrack(next, true);
+    });
+  });
+
+  showBoth.forEach(function (b) {
+    b.addEventListener("click", function () { setTrack(null, true); });
+  });
+
+  var saved = null;
+  try { saved = localStorage.getItem(TRACK_KEY); } catch (e) {}
+  setTrack(saved === "a" || saved === "b" ? saved : null, false);
 })();
 </script>
 
